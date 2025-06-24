@@ -173,6 +173,26 @@ class DatabaseManager:
             messagebox.showerror("Erro de Banco de Dados", f"Erro ao atualizar receita: {e}")
             return False
 
+    def delete_recipe(self, recipe_id):
+        """
+        Delete a recipe by its ID.
+        Deletes the recipe and all associated ingredients in the junction table.
+        """
+        try:
+            # Get the recipe name before deleting
+            self.cursor.execute("SELECT name FROM recipes WHERE recipe_id = ?", (recipe_id,))
+            result = self.cursor.fetchone()
+            name = result[0] if result else ""
+            self.log_action("Receita Excluída", f"ID: {recipe_id}, Nome: {name}")
+            # Delete the recipe and all associated ingredients
+            self.cursor.execute("DELETE FROM recipes WHERE recipe_id = ?", (recipe_id,))
+            self.conn.commit()
+            
+            return True
+        except sqlite3.Error as e:
+            messagebox.showerror("Erro de Banco de Dados", f"Erro ao excluir receita: {e}")
+            return False
+
     def get_all_recipes(self):
         """Get all recipes function."""
         try:
@@ -310,4 +330,3 @@ class DatabaseManager:
         except sqlite3.Error as e:
             messagebox.showerror("Erro de Banco de Dados", f"Erro ao filtrar receitas: {e}")
             return [] # Empty list if an error occurs
-

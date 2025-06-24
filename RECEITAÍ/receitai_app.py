@@ -103,7 +103,7 @@ class ReceitAIApp:
         self.tags_entry.grid(row=4, column=1, sticky="ew", pady=5)
 
         # Ingredients
-        ttk.Label(frame, text="Ingredientes um por linha Exemplo -->\nIndique 'unidades' 'medida' 'de' 'ingrediente' \n  2 unidades de ovos \n  1 colher de farinha \n  300 mg de leite ").grid(row=5, column=0, sticky="nw", pady=5)
+        ttk.Label(frame, text="Ingredientes um por linha Exemplo -->\nIndique 'unidades' 'medida' 'de' 'ingrediente' \n   2 unidades de ovos \n   1 colher de farinha \n   300 mg de leite ").grid(row=5, column=0, sticky="nw", pady=5)
         self.ingredients_text = scrolledtext.ScrolledText(frame, height=8, wrap=tk.WORD)
         self.ingredients_text.grid(row=5, column=1, sticky="nsew", pady=5)
 
@@ -341,6 +341,8 @@ class ReceitAIApp:
             button_frame.pack(pady=10)
 
             ttk.Button(button_frame, text="Salvar Alterações", command=lambda: self._save_edited_recipe(recipe_id, details_window)).pack(side=tk.LEFT, padx=5)
+            # This button will delete the recipe, but only after confirmation
+            ttk.Button(button_frame, text="Excluir Receita", command=lambda: self._delete_recipe(recipe_id, details_window)).pack(side=tk.LEFT, padx=5)
             ttk.Button(button_frame, text="Cancelar", command=details_window.destroy).pack(side=tk.LEFT, padx=5)
 
             self.db_manager.log_action("Ver Detalhes da Receita", f"ID: {recipe_id}, Nome: {selected_recipe['name']}")
@@ -395,6 +397,16 @@ class ReceitAIApp:
             self._refresh_recipe_search_results() # Refresh the search results after updating a recipe
         else:
             messagebox.showerror("Erro", "Erro ao atualizar receita. Verifique o console para mais detalhes.")
+
+    def _delete_recipe(self, recipe_id, details_window):
+        """Deletes the selected recipe after confirmation."""
+        if messagebox.askyesno("Confirmar Exclusão", "Tem certeza que deseja excluir esta receita? Ela parece tão gostosa..."):
+            if self.db_manager.delete_recipe(recipe_id):
+                messagebox.showinfo("Sucesso", "Receita excluída com sucesso! Você não vai mais poder fazer essa delícia...")
+                details_window.destroy() # Fucking destroys the details window after saving
+                self._refresh_recipe_search_results() # Refresh the search results after deleting a recipe
+            else:
+                messagebox.showerror("Erro", "Ocorreu um erro ao excluir a receita.")
 
 
     def _create_logs_tab(self):
